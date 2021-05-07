@@ -25,9 +25,11 @@ module.exports = app => {
     const usersController=require('../controller/usersController');
    
     app.post("/signup", usersController.signUp);
-    app.post("/login", usersController.Login);
+    app.post("/loginasuser", usersController.Loginasuser);
     app.post("/verifyOTP", usersController.VerifyOTP);
     app.get("/resendOTP/:mobile", usersController.ResendOTP);
+    app.get("/getallactiveusers", usersController.getAllActiveUser);
+
 
 
   };

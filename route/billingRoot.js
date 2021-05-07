@@ -28,9 +28,16 @@ module.exports = app => {
     app.post("/pauseTimeEntry", billingController.pauseTime);
     app.post("/resumeTimeEntry", billingController.resumeTime);
     app.post("/stopTimeEntry", billingController.stopTime);
-    app.get("/billdata/:id", billingController.getuserBilldata);
+
+    app.get("/billdata/:id/:start", billingController.getuserBilldata);
     app.get("/userBilldatabyid/:id", billingController.getuserBilldatabyid);
+
+    app.get("/getmachineBilldata/:id/:start", billingController.getmachineBilldata);
+    app.get("/getmachineBilldatabyid/:id", billingController.getmachineBilldatabyid);
     
+
+   
+
 
     
 

@@ -3,31 +3,32 @@ const jwt = require("jsonwebtoken");
 
 const machineModel = require("../model/machineModel");
 const mysqlConnection = require("../dbconfig");
+const SMS= require('../sms')
 
-exports.getAllActiveUser = async (req, res) => {
-    try {
-        mysqlConnection.query('SELECT * FROM users isActive=true AND isbusy=false', (err, result) => {
-            if (!err) {
-                res.status(200).send({
-                    message: "Users fetched Successfully",
-                    data: result
-                });
-            }
-            else {
-                console.log(err);
-                res.status(404).send({
-                    message: " User fetch Failed. Due to Error : " + err,
-                });
-            }
-        })
-
-
-    } catch (err) {
-        res.status(500).send({
-            message: " User fetch Failed. Due to Error : " + err,
-        });
-    }
-};
+exports.getAllActiveUser = async (req, res) => {   
+        try {
+            mysqlConnection.query('SELECT * FROM users where isactive=true AND isbusy=false', (err, result) => {
+                if (!err) {                
+                    res.status(200).send({
+                        message: "fetched Successfully",
+                        data: result
+                    });
+                }
+                else {
+                    console.log(err);
+                    res.status(500).send({
+                        message: " Failed. Due to Error : " + err,
+                    });
+                }
+            })
+    
+    
+        } catch (err) {
+            res.status(500).send({
+                message: " Failed. Due to Error : " + err,
+            });
+        }
+    };
 
 exports.signUp = async (req, res) => {
     try {
@@ -68,11 +69,12 @@ exports.signUp = async (req, res) => {
 };
 
 
-exports.Login = async (req, res) => {
+exports.Loginasuser = async (req, res) => {
     try {
-        mysqlConnection.query('SELECT * FROM users where mobile="'+req.body.mobilenumber+'" AND isactive=true AND isbusy=false', (err, result) => {
+        mysqlConnection.query('SELECT * FROM users where mobile="'+req.body.mobilenumber+'" AND isactive=true ', (err, result) => {
             if (!err) {
               //  console.log(result)
+              if(result.length){
                 const users = result
                 const OTPnumber = otpGenerator.generate(6, { upperCase: false, specialChars: false, alphabets: false });
                 const userdata={
@@ -83,18 +85,26 @@ exports.Login = async (req, res) => {
                
 
                 mysqlConnection.query('update users set otp="' + OTPnumber + '" where userid="' + result[0].userid + '"', (err1, otp) => {
+                    if(!err){
+                        SMS.sendSMS(OTPnumber,users[0].mobile)
                     res.status(200).send({
                         message: "Users fetched Successfully",
                         data: users,
                         OTPnumber                       
                     });
-
+                }
                 })
+            }else{
+                res.status(404).send({
+                    message: " User not found",
+                });
+
+            }
 
             }
             else {
                 console.log(err);
-                res.status(404).send({
+                res.status(500).send({
                     message: " User fetch Failed. Due to Error : " + err,
                 });
             }
@@ -112,7 +122,7 @@ exports.Login = async (req, res) => {
 exports.VerifyOTP = async (req, res) => {
     try {
        
-        mysqlConnection.query('SELECT * FROM users where mobile="'+req.body.mobilenumber+'" AND isactive=true AND isbusy=false', (err, result) => {
+        mysqlConnection.query('SELECT * FROM users where mobile="'+req.body.mobilenumber+'" AND isactive=true ', (err, result) => {
             if (!err) {
                 console.log(result)
                 const userdata={
@@ -158,7 +168,7 @@ exports.VerifyOTP = async (req, res) => {
 
 exports.ResendOTP = async (req, res) => {
     try {
-        mysqlConnection.query('SELECT * FROM users where mobile="'+req.params.mobile+'" AND isactive=true AND isbusy=false', (err, result) => {
+        mysqlConnection.query('SELECT * FROM users where mobile="'+req.params.mobile+'" AND isactive=true ', (err, result) => {
             if (!err) {
                 console.log(result)
                 const users = result
@@ -166,11 +176,14 @@ exports.ResendOTP = async (req, res) => {
                 console.log(OTPnumber)
 
                 mysqlConnection.query('update users set otp="' + OTPnumber + '" where userid="' + result[0].userid + '"', (err1, otp) => {
+                    if(!err1){
+                    SMS.sendSMS(OTPnumber,users[0].mobile)
                     res.status(200).send({
                         message: "OTP resend Successfully",
                         data: users,
                         OTPnumber
                     });
+                }
 
                 })
 

@@ -24,7 +24,15 @@ module.exports = app => {
    
     const machineController=require('../controller/machineController');
    
-    app.get("/getall", machineController.getAllActive);
+    app.get("/getallactivemachines", machineController.getAllActiveMachines);
+    app.post("/loginasmachine", machineController.LoginasMachine);
+    app.post("/VerifyOTPforMachine", machineController.VerifyOTPforMachine);
+    app.get("/ResendOTPforMachine/:mobile", machineController.ResendOTPforMachine);
+
+
+
+    app.get("/getActiveMachine/:id", machineController.getActiveMachine);
+    app.get("/getActiveUser/:id", machineController.getActiveUser);
 
 
   };
