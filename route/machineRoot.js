@@ -33,6 +33,7 @@ module.exports = app => {
 
     app.get("/getActiveMachine/:id", machineController.getActiveMachine);
     app.get("/getActiveUser/:id", machineController.getActiveUser);
+    app.get("/getallmachine", machineController.getallmachine);
 
 
   };

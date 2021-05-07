@@ -29,6 +29,7 @@ module.exports = app => {
     app.post("/verifyOTP", usersController.VerifyOTP);
     app.get("/resendOTP/:mobile", usersController.ResendOTP);
     app.get("/getallactiveusers", usersController.getAllActiveUser);
+    app.get("/getalluser", usersController.getalluser);
 
 
 
