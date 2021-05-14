@@ -1,27 +1,32 @@
-
 const moment = require('moment');
+var otpGenerator = require('otp-generator');
 const mysqlConnection = require("../dbconfig");
-
+const SMS= require('../sms')
+// Smoment.defaultFormat = "YYYY-MM-DD HH:mm:ss";
 
 exports.startTime = async (req, res) => {
     try {
+         console.log(moment(req.body.starttime).format('YYYY-MM-DD HH:mm'))
+        
         const params = {
-            userid: req.body.userid,
+            mobile: req.body.userid,
+            name: req.body.username,
             machineid: req.body.machineid,
             baseamount: req.body.hourlyamount,
             minutes: 0,
             totalamount: 0,
-            startdate: (moment(req.body.starttime).format('YYYY-DD-MM HH:mm')),
+            startdate: moment(req.body.starttime).format('YYYY-MM-DD HH:mm'),
             paidstatus: 'un paid',
             invoiceid: 0,
             isstarted: true,
-            startedtime: (moment(req.body.starttime).format('YYYY-DD-MM HH:mm')),
+            startedtime: moment(req.body.starttime).format('YYYY-MM-DD HH:mm'),
             ispaused: false
         }
-        mysqlConnection.query('INSERT INTO billing (userid, machineid, baseamount, minutes,totalamount,startdate,paidstatus,invoiceid,isstarted,startedtime,ispaused) VALUES' +
+       // console.log(params)
+        mysqlConnection.query('INSERT INTO billing (name,mobile, machineid, baseamount, minutes,totalamount,startdate,paidstatus,invoiceid,isstarted,startedtime,ispaused) VALUES' +
 
 
-            ' ("' + params.userid + '","' + params.machineid + '","' + params.baseamount + '","' + params.minutes + '","' + params.totalamount + '","' + params.startdate + '","'
+            ' ("' + params.name + '","' + params.mobile + '","' + params.machineid + '","' + params.baseamount + '","' + params.minutes + '","' + params.totalamount + '","' + params.startdate + '","'
 
             + params.paidstatus + '","' + params.invoiceid + '",' + params.isstarted + ',"' + params.startedtime + '",' + params.totalamount + ')', (err, result) => {
                 if (!err) {
@@ -67,7 +72,7 @@ exports.pauseTime = async (req, res) => {
     try {
         const params = {
             id: req.body.id,
-            pausedtime: (moment(req.body.pausedtime).format('YYYY-DD-MM HH:mm')),
+            pausedtime: (moment(req.body.pausedtime).format('YYYY-MM-DD HH:mm')),
 
         }
 
@@ -116,7 +121,7 @@ exports.resumeTime = async (req, res) => {
     try {
         const params = {
             id: req.body.id,
-            startedtime: (moment(req.body.startedtime).format('YYYY-DD-MM HH:mm')),
+            startedtime: (moment(req.body.startedtime).format('YYYY-MM-DD  HH:mm')),
 
         }
 
@@ -163,7 +168,7 @@ exports.stopTime = async (req, res) => {
     try {
         const params = {
             id: req.body.id,
-            endtime: (moment(req.body.endtime).format('YYYY-DD-MM HH:mm')),
+            endtime: (moment(req.body.endtime).format('YYYY-MM-DD HH:mm')),
 
         }
 
@@ -263,11 +268,12 @@ exports.getuserBilldata = async (req, res) => {
             start = moment().subtract(1, 'years').startOf('years').format('YYYY-MM-DD 00:00:00')
             end = moment().subtract(1, 'years').endOf('years').format('YYYY-MM-DD 23:59:59 ')
         }
-
-        // mysqlConnection.query('SELECT * FROM billing where mobile="'+req.body.mobile+'" isActive=true AND isbusy=false', (err, result) => {
-        mysqlConnection.query('SELECT b.* , u.* ,m.machinename , m.mobile FROM users u inner join billing b on u.mobile= b.userid inner join machines m on b.machineid= m.mobile where u.mobile="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
+        
+        //  mysqlConnection.query('SELECT * FROM billing where mobile="'+req.body.mobile+'" isActive=true AND isbusy=false', (err, result) => {
+            mysqlConnection.query('SELECT b.* ,m.machinename, m.uniqueid FROM users u INNER JOIN machines m ON u.uniqueid=m.uniqueid INNER JOIN billing b ON b.machineid=m.mobile1  where u.mobile="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
+                // mysqlConnection.query('SELECT b.* , u.* ,m.machinename , m.mobile FROM users u inner join billing b on u.mobile= b.userid inner join machines m on b.machineid= m.mobile where u.mobile="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
             if (!err) {
-                //console.log('result',result)
+                console.log('result',result)
                 res.status(200).send({
                     message: "Users fetched Successfully",
                     data: result
@@ -315,6 +321,85 @@ exports.getuserBilldatabyid = async (req, res) => {
 };
 
 
+exports.VerifyOTPforTimer  = async (req, res) => {
+    try {
+       
+        mysqlConnection.query('SELECT * FROM machines where mobile1="'+req.body.mobilenumber+'" AND isactive=true', (err, result) => {
+            if (!err && result.length) {                
+                
+                const machines = result
+
+                if (req.body.otp === result[0].otp) {
+                    res.status(200).send({
+                        message: "Success",
+                        data: machines,
+                        token
+                    });
+
+                } else {
+                    res.status(200).send({
+                        message: "OTP not mached"                        
+                    });
+                }           
+            }
+            else {
+                console.log(err);
+                res.status(404).send({
+                    message: " OTP fetch Failed. Due to Error : " + err,
+                });
+            }
+        })
+
+    } catch (err) {
+        res.status(500).send({
+            message: " OTP fetch Failed. Due to Error : " + err,
+        });
+    }
+};
+
+exports.sendOTPforTimer = async (req, res) => {
+    try {
+        console.log(req.params)
+        mysqlConnection.query('SELECT * FROM machines where mobile1="'+req.params.mobile+'" AND isactive=true', (err, result) => {
+            if (!err) {
+                if(result.length){
+                const machines = result
+                const OTPnumber = otpGenerator.generate(6, { upperCase: false, specialChars: false, alphabets: false });
+                console.log(OTPnumber)
+
+                mysqlConnection.query('update machines set otp="' + OTPnumber + '" where machineid="' + result[0].machineid + '"', (err1, otp) => {
+                    if (!err) {
+                SMS.sendSMS(OTPnumber,req.params.usermobile)
+
+                    res.status(200).send({
+                        message: "OTP resend Successfully",
+                        data: machines,
+                        OTPnumber
+                    });
+                }else{
+                    console.log(err)
+                }
+
+                })
+            }
+            }
+            else {
+                console.log(err);
+                res.status(404).send({
+                    message: " OTP resend Failed. Due to Error : " + err,
+                });
+            }
+        })
+
+
+    } catch (err) {
+        res.status(500).send({
+            message: " OTP resend Failed. Due to Error : " + err,
+        });
+    }
+};
+
+
 
 // machine bill and machine bill details
 
@@ -357,7 +442,8 @@ exports.getmachineBilldata = async (req, res) => {
 
         // mysqlConnection.query('SELECT * FROM billing where mobile="'+req.body.mobile+'" isActive=true AND isbusy=false', (err, result) => {
         // mysqlConnection.query('SELECT b.* , u.* ,m.machinename , m.mobile FROM users u inner join billing b on u.mobile= b.userid inner join machines m on b.machineid= m.mobile where u.mobile="'+req.params.id+'" AND b.startdate>="'+start+'" AND b.startdate<="'+end+'" ', (err, result) => {
-        mysqlConnection.query('SELECT b.* , m.* ,u.firstname, u.lastname , u.mobile FROM machines m inner join billing b on m.mobile= b.machineid inner join users u on b.userid= u.mobile where m.mobile="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
+            // mysqlConnection.query('SELECT b.* , m.* ,u.firstname, u.lastname , u.mobile FROM machines m inner join billing b on m.mobile1= b.machineid inner join users u on b.userid= u.mobile where m.mobile1="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
+                mysqlConnection.query('SELECT b.* , m.machinename, m.uniqueid FROM machines m inner join billing b on m.mobile1= b.machineid where m.mobile1="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
             if (!err) {
                 //console.log('result',result)
                 res.status(200).send({

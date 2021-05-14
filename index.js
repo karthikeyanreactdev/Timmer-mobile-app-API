@@ -41,6 +41,10 @@ require('./route/machineRoot')(app);
 require('./route/usersRoot')(app);
 require('./route/billingRoot')(app);
 require('./route/reportRoot')(app);
+//admin route
+require('./Admin/route/usersRoute')(app);
+require('./Admin/route/reportRoute')(app);
+require('./Admin/route/machineRoute')(app);
 
 const port=5000;
 app.listen(5000, ()=>{    

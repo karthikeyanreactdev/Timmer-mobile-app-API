@@ -32,14 +32,15 @@ exports.getAllActiveMachines = async (req, res) => {
 
 exports.LoginasMachine = async (req, res) => {
     try {
-        mysqlConnection.query('SELECT * FROM machines where mobile="'+req.body.mobilenumber+'" AND isactive=true ', (err, result) => {
+        mysqlConnection.query('SELECT * FROM machines where mobile1="'+req.body.mobilenumber+'" AND isactive=true ', (err, result) => {
             if (!err) {
               //  console.log(result)
               if(result.length){
+                  if(result[0].uniqueid===req.body.uniqueid){
                 const machines = result
                 const OTPnumber = otpGenerator.generate(6, { upperCase: false, specialChars: false, alphabets: false });
                 const userdata={
-                    mobilenumber:result[0].mobile,
+                    mobilenumber:result[0].mobile1,
                     role:result[0].role,
                 }
                 console.log(OTPnumber);
@@ -47,7 +48,7 @@ exports.LoginasMachine = async (req, res) => {
 
                 mysqlConnection.query('update machines set otp="' + OTPnumber + '" where machineid="' + result[0].machineid + '"', (err1, otp) => {
                     if(!err1){
-                SMS.sendSMS(OTPnumber,machines[0].mobile )
+                SMS.sendSMS(OTPnumber,machines[0].mobile1 )
 
                     res.status(200).send({
                         message: "machines fetched Successfully",
@@ -57,6 +58,11 @@ exports.LoginasMachine = async (req, res) => {
                 }
 
                 })
+            }else{
+                res.status(422).send({
+                    message: "Invalid user unique id"
+                });
+            }
             }else{
                 res.status(404).send({
                     message: "machine not found"
@@ -83,11 +89,11 @@ exports.LoginasMachine = async (req, res) => {
 exports.VerifyOTPforMachine  = async (req, res) => {
     try {
        
-        mysqlConnection.query('SELECT * FROM machines where mobile="'+req.body.mobilenumber+'" AND isactive=true', (err, result) => {
+        mysqlConnection.query('SELECT * FROM machines where mobile1="'+req.body.mobilenumber+'" AND isactive=true', (err, result) => {
             if (!err) {                
                 const userdata={
                     role:result[0].role,
-                    mobile:result[0].mobile
+                    mobile:result[0].mobile1
                 }
                 var token = jwt.sign({
                     userdata
@@ -128,7 +134,7 @@ exports.VerifyOTPforMachine  = async (req, res) => {
 
 exports.ResendOTPforMachine = async (req, res) => {
     try {
-        mysqlConnection.query('SELECT * FROM machines where mobile="'+req.params.mobile+'" AND isactive=true', (err, result) => {
+        mysqlConnection.query('SELECT * FROM machines where mobile1="'+req.params.mobile+'" AND isactive=true', (err, result) => {
             if (!err) {
                 
                 const machines = result
@@ -137,7 +143,7 @@ exports.ResendOTPforMachine = async (req, res) => {
 
                 mysqlConnection.query('update machines set otp="' + OTPnumber + '" where machineid="' + result[0].machineid + '"', (err1, otp) => {
                     if (!err) {
-                SMS.sendSMS(OTPnumber,machines[0].mobile)
+                SMS.sendSMS(OTPnumber,machines[0].mobile1)
 
                     res.status(200).send({
                         message: "OTP resend Successfully",

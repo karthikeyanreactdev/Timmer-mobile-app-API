@@ -34,7 +34,8 @@ exports.signUp = async (req, res) => {
     try {
         const OTPnumber = otpGenerator.generate(6, { upperCase: false, specialChars: false, alphabets: false });
         console.log(OTPnumber)
-
+        const uniqueid = otpGenerator.generate(8, { upperCase: false, specialChars: false, alphabets: true });
+        console.log(uniqueid)
         const params={
             firstName:req.body.firstName,
             lastName:req.body.lastName,
@@ -44,11 +45,12 @@ exports.signUp = async (req, res) => {
             otp:OTPnumber,
             isbusy:false,
         };
-         mysqlConnection.query('INSERT INTO users (userid, firstname, lastname, mobile,role,isactive,otp,isbusy) VALUES (uuid(),"' + params.firstName + '","' + params.lastName + '","' + params.mobile + '","' + params.role + '",' + params.isActive + ',"' + params.otp + '",' + params.isbusy + ')', (err, result) => {
+         mysqlConnection.query('INSERT INTO users (userid, firstname, lastname, mobile,role,isactive,otp,isbusy,uniqueid) VALUES (uuid(),"' + params.firstName + '","' + params.lastName + '","' + params.mobile + '","' + params.role + '",' + params.isActive + ',"' + params.otp + '",' + params.isbusy + ',"'+uniqueid+'")', (err, result) => {
             if (!err) {
                 res.status(200).send({
                     message: "User added Successfully",
-                    data: result
+                    data: result,
+                    OTPnumber
 
                 });
             }
@@ -70,6 +72,7 @@ exports.signUp = async (req, res) => {
 
 
 exports.Loginasuser = async (req, res) => {
+    console.log(req.body)
     try {
         mysqlConnection.query('SELECT * FROM users where mobile="'+req.body.mobilenumber+'" AND isactive=true ', (err, result) => {
             if (!err) {

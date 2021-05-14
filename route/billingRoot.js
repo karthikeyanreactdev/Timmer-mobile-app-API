@@ -37,7 +37,8 @@ module.exports = app => {
     
 
    
-
+    app.post("/VerifyOTPforTimer", billingController.VerifyOTPforTimer);
+    app.get("/sendOTPforTimer/:mobile/:usermobile", billingController.sendOTPforTimer);
 
     
 
