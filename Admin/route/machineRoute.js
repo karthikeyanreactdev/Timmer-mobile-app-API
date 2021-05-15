@@ -26,9 +26,9 @@ module.exports = app => {
 
     //crud operation//    
     app.get("/getallmachines",machineController.getAllMachine);
-    app.get("/getMachineById/:machineId",machineController.getMachineById);
+    app.get("/getMachineById/:machineid",machineController.getMachineById);
     app.put("/updateMachine",machineController.updateMachine);
-    app.delete("/deleteMachine/:machineId",machineController.deleteMachine);
+    app.delete("/deleteMachine/:machineid",machineController.deleteMachine);
     app.post("/createMachine",machineController.createMachine);
     //crud operation//
 

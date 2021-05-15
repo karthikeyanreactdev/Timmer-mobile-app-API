@@ -1,8 +1,10 @@
+var otpGenerator = require('otp-generator');
+
 const mysqlConnection = require("../../dbconfig");
 
 exports.getAllMachine = function(req, res) {
     try {
-        mysqlConnection.query('SELECT * FROM machines', (err, result) => {
+        mysqlConnection.query('SELECT m.*, u.firstname,u.lastname, u.mobile FROM machines m inner join users u on m.uniqueid=u.uniqueid', (err, result) => {
             if (!err) {
                 res.status(200).send({
                     message: "machine fetched Successfully",
@@ -31,7 +33,7 @@ exports.getAllMachine = function(req, res) {
 exports.getMachineById = function(req, res) {
     
     try {
-        mysqlConnection.query('SELECT * FROM machines  Where machineid = ?',req.params.machineid, (err, result) => {
+        mysqlConnection.query('SELECT * FROM machines where machineid ="'+req.params.machineid+'"', (err, result) => {
             if (!err) {
                 res.status(200).send({
                     message: "machines fetched Successfully",
@@ -59,13 +61,16 @@ exports.getMachineById = function(req, res) {
 //update machine
 exports.updateMachine = function(req, res) {
     try {
+        console.log(req.body)
         const params={
             machineid:req.body.machineid,
-            machineName:req.body.machineName,            
-            mobile:req.body.mobile            
+            machineName:req.body.machinename,            
+            mobile:req.body.mobile ,
+            uniqueid:req.body.uniqueid
+
         }
         
-      mysqlConnection.query( "UPDATE machines SET machineName=?,mobile=? WHERE machineid = ?", [params.machineName,params.mobile,params.machineid], (err, result) => {        
+      mysqlConnection.query( "UPDATE machines SET machinename=?,mobile1=?, uniqueid=? WHERE machineid = ?", [params.machineName,params.mobile,params.uniqueid,params.machineid], (err, result) => {        
             if (!err) {                
                 res.status(200).send({
                     message: "Machine Updated Successfully"                    
@@ -122,15 +127,16 @@ exports.deleteMachine = function(req, res) {
 exports.createMachine = function(req, res) {
     try {
         const params={
-            machineName:req.body.machineName,            
+            machineName:req.body.machinename,            
             mobile:req.body.mobile,
             isActive:true,
             otp:'',
             isBusy:false,
-            role:'machine'
+            role:'machine',
+            uniqueid:req.body.uniqueid
             
         }
-        mysqlConnection.query('INSERT INTO machines (machineid,machineName,mobile,isActive,otp,isbusy,role) VALUES (uuid(),"' + params.machineName + '","' + params.mobile+ '",' + params.isActive + ',"' + params.otp+ '",' + params.isBusy + ',"' + params.role+ '")', (err, result) => {
+        mysqlConnection.query('INSERT INTO machines (machineid,machinename,mobile1,isactive,otp,isbusy,role,uniqueid) VALUES (uuid(),"' + params.machineName + '","' + params.mobile+ '",' + params.isActive + ',"' + params.otp+ '",' + params.isBusy + ',"' + params.role+ '","' + params.uniqueid+ '")', (err, result) => {
             if (!err) {
                 res.status(200).send({
                     message: "machine created Successfully",

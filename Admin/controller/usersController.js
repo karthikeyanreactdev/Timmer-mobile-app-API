@@ -1,3 +1,5 @@
+var otpGenerator = require('otp-generator');
+
 const mysqlConnection = require("../../dbconfig");
 
 
@@ -6,7 +8,7 @@ const mysqlConnection = require("../../dbconfig");
 //getAllUsers//
 exports.getAllUsers = function(req, res) {
     try {
-        mysqlConnection.query('SELECT * FROM users Where isActive=true AND isbusy=false', (err, result) => {
+        mysqlConnection.query('SELECT * FROM users Where isactive=true AND isbusy=false', (err, result) => {
             if (!err) {
                 res.status(200).send({
                     message: "Users fetched Successfully",
@@ -33,16 +35,19 @@ exports.getAllUsers = function(req, res) {
 //create user//
 exports.createUser = function(req, res) {
     try {
+        const uniqueid = otpGenerator.generate(8, { upperCase: false, specialChars: false, alphabets: true });
+        // console.log(uniqueid)
         const params={
             firstName:req.body.firstName,
             lastName:req.body.lastName,
             mobile:req.body.mobile,
-            role:req.body.role,
+            role:'user',
             isActive:true,
             otp:req.body.otp,
             isbusy:false,
+            uniqueid
         }
-        mysqlConnection.query('INSERT INTO users (userid, firstname, lastname, mobile,role,isactive,otp,isbusy) VALUES (uuid(),"' + params.firstName + '","' + params.lastName + '","' + params.mobile + '","' + params.role + '",' + params.isActive + ',"' + params.otp + '",' + params.isbusy + ')', (err, result) => {
+        mysqlConnection.query('INSERT INTO users (userid, firstname, lastname, mobile,role,isactive,otp,isbusy,uniqueid) VALUES (uuid(),"' + params.firstName + '","' + params.lastName + '","' + params.mobile + '","' + params.role + '",' + params.isActive + ',"' + params.otp + '",' + params.isbusy + ',"'+uniqueid+'")', (err, result) => {
             if (!err) {
                 res.status(200).send({
                     message: "User created Successfully",
@@ -74,7 +79,7 @@ exports.updateUser = function(req, res) {
             firstName:req.body.firstName,
             lastName:req.body.lastName,
             mobile:req.body.mobile,
-            role:req.body.role,
+            role:'user',
             isActive:true,
             otp:req.body.otp,
             isbusy:false,
