@@ -30,6 +30,59 @@ exports.getAllActiveMachines = async (req, res) => {
     }
 };
 
+exports.getAllActiveMachinesbaseduser = async (req, res) => {
+
+    try {
+        mysqlConnection.query('SELECT * FROM machines where uniqueid="'+req.params.id+'" AND isactive=true AND isbusy=false', (err, result) => {
+            if (!err) {                
+                res.status(200).send({
+                    message: "fetched Successfully",
+                    data: result
+                });
+            }
+            else {
+                console.log(err);
+                res.status(500).send({
+                    message: " Failed. Due to Error : " + err,
+                });
+            }
+        })
+
+
+    } catch (err) {
+        res.status(500).send({
+            message: " Failed. Due to Error : " + err,
+        });
+    }
+};
+
+exports.getAllbusyeMachinesbaseduser = async (req, res) => {
+
+    try {
+        mysqlConnection.query('SELECT * FROM machines where uniqueid="'+req.params.id+'" AND isactive=true', (err, result) => {
+            if (!err) {                
+                res.status(200).send({
+                    message: "fetched Successfully",
+                    data: result
+                });
+            }
+            else {
+                console.log(err);
+                res.status(500).send({
+                    message: " Failed. Due to Error : " + err,
+                });
+            }
+        })
+
+
+    } catch (err) {
+        res.status(500).send({
+            message: " Failed. Due to Error : " + err,
+        });
+    }
+};
+
+
 exports.LoginasMachine = async (req, res) => {
     try {
         mysqlConnection.query('SELECT * FROM machines where mobile1="'+req.body.mobilenumber+'" AND isactive=true ', (err, result) => {

@@ -30,6 +30,7 @@ module.exports = app => {
     app.post("/stopTimeEntry", billingController.stopTime);
 
     app.get("/billdata/:id/:start", billingController.getuserBilldata);
+    app.get("/getuserBilldatabyunique/:id", billingController.getuserBilldatabyunique);
     app.get("/userBilldatabyid/:id", billingController.getuserBilldatabyid);
 
     app.get("/getmachineBilldata/:id/:start", billingController.getmachineBilldata);

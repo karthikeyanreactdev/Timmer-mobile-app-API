@@ -29,11 +29,13 @@ module.exports = app => {
     app.post("/VerifyOTPforMachine", machineController.VerifyOTPforMachine);
     app.get("/ResendOTPforMachine/:mobile", machineController.ResendOTPforMachine);
 
-
-
     app.get("/getActiveMachine/:id", machineController.getActiveMachine);
-    app.get("/getActiveUser/:id", machineController.getActiveUser);
+     app.get("/getActiveUser/:id", machineController.getActiveUser);
     app.get("/getallmachine", machineController.getallmachine);
+
+    app.get("/getAllActiveMachinesbaseduser/:id",machineController.getAllActiveMachinesbaseduser);
+    app.get("/getAllbusyeMachinesbaseduser/:id",machineController.getAllbusyeMachinesbaseduser);
+
 
 
   };

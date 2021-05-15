@@ -29,7 +29,7 @@ module.exports = app => {
     app.get("/getMachineById/:machineid",machineController.getMachineById);
     app.put("/updateMachine",machineController.updateMachine);
     app.delete("/deleteMachine/:machineid",machineController.deleteMachine);
-    app.post("/createMachine",machineController.createMachine);
+    app.post("/createMachine",machineController.createMachine);    
     //crud operation//
 
   };

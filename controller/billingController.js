@@ -294,6 +294,35 @@ exports.getuserBilldata = async (req, res) => {
         });
     }
 };
+exports.getuserBilldatabyunique = async (req, res) => {
+    try {
+       
+        
+        //  mysqlConnection.query('SELECT * FROM billing where mobile="'+req.body.mobile+'" isActive=true AND isbusy=false', (err, result) => {
+            mysqlConnection.query('SELECT b.* ,m.machinename, m.uniqueid FROM users u INNER JOIN machines m ON u.uniqueid=m.uniqueid INNER JOIN billing b ON b.machineid=m.mobile1  where u.uniqueid="' + req.params.id + '" AND iscompleted=false', (err, result) => {
+                // mysqlConnection.query('SELECT b.* , u.* ,m.machinename , m.mobile FROM users u inner join billing b on u.mobile= b.userid inner join machines m on b.machineid= m.mobile where u.mobile="' + req.params.id + '" AND b.startdate>="' + start + '" AND b.startdate<="' + end + '" AND iscompleted=true', (err, result) => {
+            if (!err) {
+                console.log('result',result)
+                res.status(200).send({
+                    message: "Users fetched Successfully",
+                    data: result
+                });
+            }
+            else {
+                console.log(err);
+                res.status(404).send({
+                    message: " User fetch Failed. Due to Error : " + err,
+                });
+            }
+        })
+
+
+    } catch (err) {
+        res.status(500).send({
+            message: " User fetch Failed. Due to Error : " + err,
+        });
+    }
+};
 
 exports.getuserBilldatabyid = async (req, res) => {
     try {
